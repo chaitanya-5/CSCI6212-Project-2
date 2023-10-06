@@ -1,0 +1,76 @@
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
+class Points {
+    int x;
+    int y;
+
+    public Points(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+public class Main {
+
+    public static List<Points> computeStaircase(List<Points> points) {
+        if (points.size() <= 1) {
+            return points;
+        }
+
+        int mid = points.size() / 2;
+        List<Points> left = points.subList(0, mid);
+        List<Points> right = points.subList(mid, points.size());
+
+        List<Points> staircaseLeft = computeStaircase(left);
+        List<Points> staircaseRight = computeStaircase(right);
+
+        return mergeStaircase(staircaseLeft, staircaseRight);
+    }
+
+    public static List<Points> mergeStaircase(List<Points> staircaseLeft, List<Points> staircaseRight) {
+        List<Points> mergedStaircase = new ArrayList<>();
+        int i = 0, j = 0;
+
+        while (i < staircaseLeft.size() && j < staircaseRight.size()) {
+            if (staircaseLeft.get(i).y <= staircaseRight.get(j).y) {
+                mergedStaircase.add(staircaseLeft.get(i));
+                i++;
+            } else {
+                mergedStaircase.add(new Points(staircaseRight.get(j).x, staircaseLeft.get(i).y));
+                j++;
+            }
+        }
+
+        mergedStaircase.addAll(staircaseLeft.subList(i, staircaseLeft.size()));
+        mergedStaircase.addAll(staircaseRight.subList(j, staircaseRight.size()));
+
+        return mergedStaircase;
+    }
+
+    public static void main(String[] args) {
+        int[] nValues = {10, 100, 1000, 10000, 100000};
+
+        for (int n : nValues) {
+            List<Points> points = new ArrayList<>();
+            Random random = new Random();
+
+            for (int i = 0; i < n; i++) {
+                points.add(new Points(random.nextInt(1000) + 1, random.nextInt(1000) + 1));
+            }
+
+            // Sort the points by x-coordinate
+            Collections.sort(points, (p1, p2) -> Integer.compare(p1.x, p2.x));
+
+            // Compute the top-right staircase
+            long startTime = System.nanoTime();
+            List<Points> staircase = computeStaircase(points);
+            long endTime = System.nanoTime();
+            double executionTime = (endTime - startTime) / 1e9; // Convert to seconds
+
+            System.out.printf("Execution time for n = %d: %.6f seconds\n", n, executionTime);
+        }
+    }
+}
